@@ -20,6 +20,10 @@
 
 -->
 ## Upcoming Release
+* Added `HighSpeedInterconnectPlacement` parameter to `New-AzVmss` and `New-AzVmssConfig` cmdlets
+    - Allows customers to enable or disable Infiniband network interconnect for RDMA VM sizes (Virtual Machine Scale Sets)
+    - Supported values: 'None' and 'Trunk'
+    - Requires API version 2025-04-01 or higher
 
 ## Version 11.0.0
 * Improved user experience and consistency. This may introduce breaking changes. Please refer to [here](https://go.microsoft.com/fwlink/?linkid=2340249).

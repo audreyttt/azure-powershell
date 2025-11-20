@@ -299,6 +299,14 @@ namespace Microsoft.Azure.Commands.Compute.Automation
             HelpMessage = "Specify whether to implicitly install the ProxyAgent Extension. This option is currently applicable only for Linux Os.")]
         public SwitchParameter AddProxyAgentExtension { get; set; }
 
+        [Parameter(
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            ParameterSetName = SimpleParameterSet,
+            HelpMessage = "Specifies the high speed interconnect placement for the virtual machine scale set. Possible values are 'None' and 'Trunk'.")]
+        [PSArgumentCompleter("None", "Trunk")]
+        public string HighSpeedInterconnectPlacement { get; set; }
+
         private void ConfigureSecuritySettings()
         {
             if (SecurityType?.ToLower() == SecurityTypes.TrustedLaunch ||
@@ -560,7 +568,8 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                     securityPostureId: _cmdlet.SecurityPostureId,
                     securityPostureExcludeExtension: _cmdlet.SecurityPostureExcludeExtension,
                     enableProxyAgent: _cmdlet.EnableProxyAgent ? true : (bool?)null,
-                    addProxyAgentExtension: _cmdlet.AddProxyAgentExtension.IsPresent ? true : (bool?)null
+                    addProxyAgentExtension: _cmdlet.AddProxyAgentExtension.IsPresent ? true : (bool?)null,
+                    highSpeedInterconnectPlacement: _cmdlet.IsParameterBound(c => c.HighSpeedInterconnectPlacement) ? _cmdlet.HighSpeedInterconnectPlacement : null
                     );
             }
 
@@ -701,7 +710,8 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                     securityPostureId: _cmdlet.SecurityPostureId,
                     securityPostureExcludeExtension: _cmdlet.SecurityPostureExcludeExtension,
                     enableProxyAgent: _cmdlet.EnableProxyAgent ? true : (bool?)null,
-                    addProxyAgentExtension: _cmdlet.AddProxyAgentExtension.IsPresent ? true : (bool?)null
+                    addProxyAgentExtension: _cmdlet.AddProxyAgentExtension.IsPresent ? true : (bool?)null,
+                    highSpeedInterconnectPlacement: _cmdlet.IsParameterBound(c => c.HighSpeedInterconnectPlacement) ? _cmdlet.HighSpeedInterconnectPlacement : null
                 );
             }
         }
