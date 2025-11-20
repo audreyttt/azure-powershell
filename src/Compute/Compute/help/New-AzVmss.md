@@ -33,7 +33,8 @@ New-AzVmss [[-ResourceGroupName] <String>] [-VMScaleSetName] <String> [-AsJob] [
  [-BackendPoolName <String>] [-SystemAssignedIdentity] [-UserAssignedIdentity <String>] [-EnableUltraSSD]
  [-Zone <System.Collections.Generic.List`1[System.String]>] [-NatBackendPort <Int32[]>]
  [-DataDiskSizeInGb <Int32[]>] [-ProximityPlacementGroupId <String>] [-HostGroupId <String>]
- [-Priority <String>] [-EvictionPolicy <String>] [-MaxPrice <Double>] [-ScaleInPolicy <String[]>]
+ [-HighSpeedInterconnectPlacement <String>] [-Priority <String>] [-EvictionPolicy <String>]
+ [-MaxPrice <Double>] [-ScaleInPolicy <String[]>]
  [-SkipExtensionsOnOverprovisionedVMs] [-EncryptionAtHost] [-PlatformFaultDomainCount <Int32>]
  [-OrchestrationMode <String>] [-CapacityReservationGroupId <String>] [-ImageReferenceId <String>]
  [-DiskControllerType <String>] [-SharedGalleryImageId <String>] [-SecurityType <String>]
@@ -610,6 +611,23 @@ Specifies the dedicated host group the virtual machine scale set will reside in.
 Type: System.String
 Parameter Sets: SimpleParameterSet
 Aliases: HostGroup
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -HighSpeedInterconnectPlacement
+Specifies the high speed interconnect placement for the virtual machine scale set. This property allows customers to enable or disable Infiniband network interconnect for RDMA VM sizes. Possible values are:
+- None: No high speed interconnect placement
+- Trunk: Trunk high speed interconnect placement
+
+```yaml
+Type: System.String
+Parameter Sets: SimpleParameterSet
+Aliases:
 
 Required: False
 Position: Named

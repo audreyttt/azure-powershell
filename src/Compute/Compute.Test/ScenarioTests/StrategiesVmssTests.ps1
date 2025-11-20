@@ -551,3 +551,58 @@ function Test-SimpleNewVmssSkipExtOverprovision
         Clean-ResourceGroup $vmssname
     }
 }
+
+<#
+.SYNOPSIS
+Test HighSpeedInterconnectPlacement parameter for New-AzVmss
+#>
+function Test-SimpleNewVmssWithHighSpeedInterconnect
+{
+    # Setup
+    $vmssname = Get-ResourceName
+
+    try
+    {
+        $username = "admin01"
+        $password = Get-PasswordForVM | ConvertTo-SecureString -AsPlainText -Force
+        $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $password
+        [string]$domainNameLabel = "$vmssname$vmssname".tolower();
+        $stnd = "Standard";
+
+        # Test with HighSpeedInterconnectPlacement = Trunk
+        New-AzVmss -Name $vmssname -Location "westus2" -Credential $cred -DomainNameLabel $domainNameLabel -SecurityType $stnd `
+                   -HighSpeedInterconnectPlacement "Trunk";
+        $vmss = Get-AzVmss -ResourceGroupName $vmssname -Name $vmssname;
+        Assert-AreEqual "Trunk" $vmss.HighSpeedInterconnectPlacement;
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $vmssname
+    }
+}
+
+<#
+.SYNOPSIS
+Test HighSpeedInterconnectPlacement parameter for New-AzVmssConfig
+#>
+function Test-NewVmssConfigWithHighSpeedInterconnect
+{
+    # Setup
+    $vmssname = Get-ResourceName
+
+    try
+    {
+        # Test with HighSpeedInterconnectPlacement = None
+        $vmssConfig = New-AzVmssConfig -Location "westus2" -HighSpeedInterconnectPlacement "None";
+        Assert-AreEqual "None" $vmssConfig.HighSpeedInterconnectPlacement;
+        
+        # Test with HighSpeedInterconnectPlacement = Trunk
+        $vmssConfig2 = New-AzVmssConfig -Location "westus2" -HighSpeedInterconnectPlacement "Trunk";
+        Assert-AreEqual "Trunk" $vmssConfig2.HighSpeedInterconnectPlacement;
+    }
+    finally
+    {
+        # No cleanup needed for config tests
+    }
+}
