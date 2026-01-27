@@ -8116,3 +8116,68 @@ function Test-VirtualMachineGalleryApplicationFlags
         Clean-ResourceGroup $resourceGroupName
     }
 }
+
+<#
+.SYNOPSIS
+Test Virtual Machine Data Disk with IOPS and MBPS parameters
+#>
+function Test-VirtualMachineDataDiskIOPSMBPS
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName
+    
+    try
+    {
+        # Common
+        $loc = 'eastus';
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+        
+        # VM Profile & Hardware
+        $vmsize = 'Standard_D2s_v3';
+        $vmname = 'vm' + $rgname;
+        $p = New-AzVMConfig -VMName $vmname -VMSize $vmsize;
+        Assert-AreEqual $p.HardwareProfile.VmSize $vmsize;
+        
+        # NRP
+        $subnet = New-AzVirtualNetworkSubnetConfig -Name ('subnet' + $rgname) -AddressPrefix "10.0.0.0/24";
+        $vnet = New-AzVirtualNetwork -Force -Name ('vnet' + $rgname) -ResourceGroupName $rgname -Location $loc -AddressPrefix "10.0.0.0/16" -Subnet $subnet;
+        $vnet = Get-AzVirtualNetwork -Name ('vnet' + $rgname) -ResourceGroupName $rgname;
+        $subnetId = $vnet.Subnets[0].Id;
+        $pubip = New-AzPublicIpAddress -Force -Name ('pubip' + $rgname) -ResourceGroupName $rgname -Location $loc -AllocationMethod Dynamic -DomainNameLabel ('pubip' + $rgname);
+        $pubip = Get-AzPublicIpAddress -Name ('pubip' + $rgname) -ResourceGroupName $rgname;
+        $pubipId = $pubip.Id;
+        $nic = New-AzNetworkInterface -Force -Name ('nic' + $rgname) -ResourceGroupName $rgname -Location $loc -SubnetId $subnetId -PublicIpAddressId $pubip.Id;
+        $nic = Get-AzNetworkInterface -Name ('nic' + $rgname) -ResourceGroupName $rgname;
+        $nicId = $nic.Id;
+        
+        $p = Add-AzVMNetworkInterface -VM $p -Id $nicId;
+        
+        # Add UltraSSD data disk with IOPS and MBPS parameters
+        $p = Add-AzVMDataDisk -VM $p -Name 'UltraData1' -Lun 0 -CreateOption Empty -DiskSizeInGB 10 -Caching None -StorageAccountType UltraSSD_LRS -DiskIOPSReadWrite 100 -DiskMBpsReadWrite 1;
+        
+        # Verify the data disk properties
+        Assert-AreEqual $p.StorageProfile.DataDisks.Count 1;
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].Name 'UltraData1';
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].Lun 0;
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].DiskSizeGB 10;
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].Caching 'None';
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].ManagedDisk.StorageAccountType 'UltraSSD_LRS';
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].DiskIOPSReadWrite 100;
+        Assert-AreEqual $p.StorageProfile.DataDisks[0].DiskMBpsReadWrite 1;
+        
+        # Add second data disk without IOPS/MBPS to ensure backward compatibility
+        $p = Add-AzVMDataDisk -VM $p -Name 'StandardData1' -Lun 1 -CreateOption Empty -DiskSizeInGB 128 -Caching ReadOnly -StorageAccountType Premium_LRS;
+        
+        Assert-AreEqual $p.StorageProfile.DataDisks.Count 2;
+        Assert-AreEqual $p.StorageProfile.DataDisks[1].Name 'StandardData1';
+        Assert-AreEqual $p.StorageProfile.DataDisks[1].Lun 1;
+        Assert-AreEqual $p.StorageProfile.DataDisks[1].ManagedDisk.StorageAccountType 'Premium_LRS';
+        Assert-AreEqual $p.StorageProfile.DataDisks[1].DiskIOPSReadWrite $null;
+        Assert-AreEqual $p.StorageProfile.DataDisks[1].DiskMBpsReadWrite $null;
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $rgname
+    }
+}

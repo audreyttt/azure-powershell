@@ -18,7 +18,8 @@ Adds a data disk to a virtual machine.
 Add-AzVMDataDisk [-VM] <PSVirtualMachine> [[-Name] <String>] [[-VhdUri] <String>] [[-Caching] <CachingTypes>]
  [[-DiskSizeInGB] <Int32>] [-Lun] <Int32> [-CreateOption] <String> [[-SourceImageUri] <String>]
  [-DiskEncryptionSetId <String>] [-DeleteOption <String>] [-SourceResourceId <String>]
- [-DefaultProfile <IAzureContextContainer>] [<CommonParameters>]
+ [-DiskIOPSReadWrite <Int64>] [-DiskMBpsReadWrite <Int64>] [-DefaultProfile <IAzureContextContainer>] 
+ [<CommonParameters>]
 ```
 
 ### VmManagedDiskParameterSetName
@@ -26,8 +27,8 @@ Add-AzVMDataDisk [-VM] <PSVirtualMachine> [[-Name] <String>] [[-VhdUri] <String>
 Add-AzVMDataDisk [-VM] <PSVirtualMachine> [[-Name] <String>] [[-Caching] <CachingTypes>]
  [[-DiskSizeInGB] <Int32>] [-Lun] <Int32> [-CreateOption] <String> [[-ManagedDiskId] <String>]
  [[-StorageAccountType] <String>] [-DiskEncryptionSetId <String>] [-WriteAccelerator] [-DeleteOption <String>]
- [-SourceResourceId <String>] [-DefaultProfile <IAzureContextContainer>]
- [<CommonParameters>]
+ [-SourceResourceId <String>] [-DiskIOPSReadWrite <Int64>] [-DiskMBpsReadWrite <Int64>] 
+ [-DefaultProfile <IAzureContextContainer>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -95,6 +96,17 @@ The next commands assigns paths of the data disk to the $DataDiskUri variable.
 This approach is used to improve the readability of the following commands.
 The final command add a data disk to the virtual machine stored in $VirtualMachine.
 The command specifies the name and location for the disk, and other properties of the disk.
+
+### Example 5: Add an UltraSSD data disk with custom IOPS and throughput
+```powershell
+$VirtualMachine = New-AzVMConfig -VMName "VirtualMachine07" -VMSize "Standard_D2s_v3"
+$VirtualMachine = Add-AzVMDataDisk -VM $VirtualMachine -Name "UltraData1" -Lun 0 -CreateOption Empty -DiskSizeInGB 10 -Caching None -StorageAccountType UltraSSD_LRS -DiskIOPSReadWrite 100 -DiskMBpsReadWrite 1
+```
+
+This example demonstrates adding an UltraSSD data disk with custom IOPS and throughput settings.
+The first command creates a virtual machine object with a VM size that supports UltraSSD.
+The second command adds an UltraSSD data disk with 10 GB capacity, 100 IOPS, and 1 MB/s throughput.
+The DiskIOPSReadWrite and DiskMBpsReadWrite parameters should be used only with UltraSSD_LRS or PremiumV2_LRS storage types.
 
 ## PARAMETERS
 
@@ -347,6 +359,36 @@ Required: False
 Position: Named
 Default value: None
 Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DiskIOPSReadWrite
+Specifies the Read-Write IOPS for the managed disk. Should be used only for UltraSSD_LRS or PremiumV2_LRS storage account types.
+
+```yaml
+Type: System.Int64
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -DiskMBpsReadWrite
+Specifies the bandwidth in MB per second for the managed disk. Should be used only for UltraSSD_LRS or PremiumV2_LRS storage account types.
+
+```yaml
+Type: System.Int64
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 

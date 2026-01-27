@@ -20,6 +20,9 @@
 
 -->
 ## Upcoming Release
+* Added `-DiskIOPSReadWrite` and `-DiskMBpsReadWrite` parameters to `Add-AzVMDataDisk` cmdlet
+    - Allows setting IOPS (Input/Output Operations Per Second) and MBPS (Megabytes Per Second) values during implicit disk creation
+    - Should be used only for UltraSSD_LRS or PremiumV2_LRS storage account types
 * Updated Compute SDK to be generated with autorest.powershell, replacing track 1 SDK
 * Added new cmdlets for Availability Set to Virtual Machine Scale Set (VMSS) Flex migration (Public Preview)
     - `Convert-AzAvailabilitySet`: Converts an Availability Set to a new Flexible Virtual Machine Scale Set without downtime
