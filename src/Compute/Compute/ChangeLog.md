@@ -20,6 +20,12 @@
 
 -->
 ## Upcoming Release
+* Added new cmdlets for Availability Set to Virtual Machine Scale Set (VMSS) migration:
+    - `Convert-AzAvailabilitySet`: Creates a new Flexible VMSS and migrates all Virtual Machines in the Availability Set without downtime.
+    - `Test-AzAvailabilitySetMigration`: Validates that the Virtual Machines in an Availability Set can be migrated to a Flexible VMSS.
+    - `Start-AzAvailabilitySetMigration`: Starts the migration of an Availability Set to an existing Flexible VMSS. Must be followed by `Move-AzVM` on each Virtual Machine.
+    - `Stop-AzAvailabilitySetMigration`: Cancels an ongoing Availability Set migration.
+    - `Move-AzVM`: Migrates an individual Virtual Machine to a Flexible VMSS. Supports `-TargetZone`, `-TargetFaultDomain`, and `-TargetVMSize` parameters.
 * Updated Compute SDK to be generated with autorest.powershell, replacing track 1 SDK
 
 ## Version 11.2.0

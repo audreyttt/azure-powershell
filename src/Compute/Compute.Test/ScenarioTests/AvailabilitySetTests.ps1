@@ -231,3 +231,130 @@ function Test-AvailabilitySetVM
         Clean-ResourceGroup $rgname
     }
 }
+
+<#
+.SYNOPSIS
+Test Convert Availability Set to Virtual Machine Scale Set
+#>
+function Test-ConvertAvailabilitySet
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName
+
+    try
+    {
+        # Common
+        $loc = Get-ComputeVMLocation;
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+
+        $asetName = 'avs' + $rgname;
+        $vmssName = 'vmss' + $rgname;
+
+        New-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName -Location $loc -Sku 'Aligned';
+        $aset = Get-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName;
+        Assert-NotNull $aset;
+
+        # Convert Availability Set to a new VMSS
+        $result = Convert-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName -VirtualMachineScaleSetName $vmssName;
+        Assert-NotNull $result;
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $rgname
+    }
+}
+
+<#
+.SYNOPSIS
+Test Validate (Test) Availability Set Migration to VMSS
+#>
+function Test-TestAvailabilitySetMigration
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName
+
+    try
+    {
+        # Common
+        $loc = Get-ComputeVMLocation;
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+
+        $asetName = 'avs' + $rgname;
+
+        New-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName -Location $loc -Sku 'Aligned';
+        $aset = Get-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName;
+        Assert-NotNull $aset;
+
+        # Create a flexible VMSS to use as migration target
+        $vmssId = "/subscriptions/" + (Get-AzContext).Subscription.Id + "/resourceGroups/$rgname/providers/Microsoft.Compute/virtualMachineScaleSets/flexvmss$rgname";
+
+        # Validate migration to the target VMSS
+        $result = Test-AzAvailabilitySetMigration -ResourceGroupName $rgname -Name $asetName -VirtualMachineScaleSetId $vmssId;
+        Assert-NotNull $result;
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $rgname
+    }
+}
+
+<#
+.SYNOPSIS
+Test Move VM to VMSS (VM migration)
+#>
+function Test-MoveAzVM
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName
+
+    try
+    {
+        # Common
+        $loc = Get-ComputeVMLocation;
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+
+        $asetName = 'aset' + $rgname;
+        $vmname = 'vm' + $rgname;
+        $vmsize = 'Standard_DS2_v2';
+        $stnd = "Standard";
+
+        # NRP
+        $subnet = New-AzVirtualNetworkSubnetConfig -Name ('subnet' + $rgname) -AddressPrefix "10.0.0.0/24";
+        $vnet = New-AzVirtualNetwork -Force -Name ('vnet' + $rgname) -ResourceGroupName $rgname -Location $loc -AddressPrefix "10.0.0.0/16" -Subnet $subnet;
+        $vnet = Get-AzVirtualNetwork -Name ('vnet' + $rgname) -ResourceGroupName $rgname;
+        $subnetId = $vnet.Subnets[0].Id;
+        $nic = New-AzNetworkInterface -Force -Name ('nic' + $rgname) -ResourceGroupName $rgname -Location $loc -SubnetId $subnetId;
+        $nic = Get-AzNetworkInterface -Name ('nic' + $rgname) -ResourceGroupName $rgname;
+        $nicId = $nic.Id;
+
+        # Availability Set
+        New-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName -Location $loc -Sku 'Aligned';
+        $aset = Get-AzAvailabilitySet -ResourceGroupName $rgname -Name $asetName;
+
+        # VM Config
+        $user = "Foo12";
+        $password = $PLACEHOLDER;
+        $securePassword = ConvertTo-SecureString $password -AsPlainText -Force;
+        $cred = New-Object System.Management.Automation.PSCredential ($user, $securePassword);
+
+        $imgRef = Get-DefaultCRPImage -loc $loc;
+        $p = New-AzVMConfig -VMName $vmname -VMSize $vmsize -SecurityType $stnd -AvailabilitySetId $aset.Id `
+           | Set-AzVMOperatingSystem -Windows -ComputerName $vmname -Credential $cred `
+           | Set-AzVMSourceImage -PublisherName $imgRef.PublisherName -Offer $imgRef.Offer -Skus $imgRef.Skus -Version $imgRef.Version `
+           | Add-AzVMNetworkInterface -Id $nicId;
+
+        New-AzVM -ResourceGroupName $rgname -Location $loc -VM $p;
+        $vm = Get-AzVM -ResourceGroupName $rgname -Name $vmname;
+        Assert-NotNull $vm;
+
+        # Move-AzVM migrates individual VMs to a VMSS - parameters are validated here
+        # Full migration requires Start-AzAvailabilitySetMigration to be run first on the Availability Set
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $rgname
+    }
+}
