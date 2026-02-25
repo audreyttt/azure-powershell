@@ -20,6 +20,11 @@
 
 -->
 ## Upcoming Release
+* Added `-InputObject` parameter to availability set migration cmdlets to support pipeline input from `Get-AzAvailabilitySet`
+    - `Convert-AzAvailabilitySet`: Added `-InputObject` parameter (PSAvailabilitySet) for pipeline support
+    - `Test-AzAvailabilitySetMigration`: Added `-InputObject` parameter (PSAvailabilitySet) for pipeline support
+    - `Start-AzAvailabilitySetMigration`: Added `-InputObject` parameter (PSAvailabilitySet) for pipeline support
+    - `Stop-AzAvailabilitySetMigration`: Added `-InputObject` parameter (PSAvailabilitySet) for pipeline support
 * Added `-DiskIOPSReadWrite` and `-DiskMBpsReadWrite` parameters to `Add-AzVMDataDisk` cmdlet
 * Added `-Tag` and `-Location` parameters to `New-AzSshKey` cmdlet
 * Added `-Tag` parameter to `Update-AzSshKey` cmdlet

@@ -12,8 +12,16 @@ Cancels the migration operation on an Availability Set.
 
 ## SYNTAX
 
+### ResourceGroupNameParameterSet (Default)
 ```
 Stop-AzAvailabilitySetMigration [-ResourceGroupName] <String> [-Name] <String> [-AsJob]
+ [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### InputObjectParameterSet
+```
+Stop-AzAvailabilitySetMigration [-InputObject] <PSAvailabilitySet> [-AsJob]
  [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
@@ -31,6 +39,13 @@ Stop-AzAvailabilitySetMigration -ResourceGroupName "MyResourceGroup" -Name "MyAv
 ```
 
 This command cancels the migration of the availability set named MyAvailabilitySet in the resource group MyResourceGroup.
+
+### Example 2: Cancel migration using a piped PSAvailabilitySet object
+```powershell
+Get-AzAvailabilitySet -ResourceGroupName "MyResourceGroup" -Name "MyAvailabilitySet" | Stop-AzAvailabilitySetMigration
+```
+
+This command retrieves the availability set and pipes it to Stop-AzAvailabilitySetMigration to cancel the migration.
 
 ## PARAMETERS
 
@@ -64,12 +79,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -InputObject
+The availability set object to cancel migration for.
+
+```yaml
+Type: Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
+Parameter Sets: InputObjectParameterSet
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
 ### -Name
 The availability set name.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases: AvailabilitySetName
 
 Required: True
@@ -84,7 +114,7 @@ Specifies the name of the resource group.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases:
 
 Required: True
@@ -130,6 +160,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+### Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
 
 ## OUTPUTS
 

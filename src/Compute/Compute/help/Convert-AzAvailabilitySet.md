@@ -12,10 +12,18 @@ Converts an Availability Set to a Flexible Virtual Machine Scale Set.
 
 ## SYNTAX
 
+### ResourceGroupNameParameterSet (Default)
 ```
 Convert-AzAvailabilitySet [-ResourceGroupName] <String> [-Name] <String>
  [-VirtualMachineScaleSetName] <String> [-NoWait] [-AsJob]
  [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### InputObjectParameterSet
+```
+Convert-AzAvailabilitySet [-InputObject] <PSAvailabilitySet> [-VirtualMachineScaleSetName] <String>
+ [-NoWait] [-AsJob] [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -39,6 +47,13 @@ Convert-AzAvailabilitySet -ResourceGroupName "MyResourceGroup" -Name "MyAvailabi
 ```
 
 This command starts the conversion of the availability set and returns immediately without waiting for the operation to complete.
+
+### Example 3: Convert an Availability Set using a piped PSAvailabilitySet object
+```powershell
+Get-AzAvailabilitySet -ResourceGroupName "MyResourceGroup" -Name "MyAvailabilitySet" | Convert-AzAvailabilitySet -VirtualMachineScaleSetName "MyScaleSet"
+```
+
+This command retrieves the availability set and pipes it to Convert-AzAvailabilitySet to convert it to a new Flexible Virtual Machine Scale Set.
 
 ## PARAMETERS
 
@@ -72,12 +87,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -InputObject
+The availability set object to convert.
+
+```yaml
+Type: Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
+Parameter Sets: InputObjectParameterSet
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
 ### -Name
 The availability set name.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases: AvailabilitySetName
 
 Required: True
@@ -107,7 +137,7 @@ Specifies the name of the resource group.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases:
 
 Required: True
@@ -168,6 +198,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+### Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
 
 ## OUTPUTS
 

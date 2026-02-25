@@ -20,13 +20,17 @@ using Microsoft.Azure.Commands.ResourceManager.Common.ArgumentCompleters;
 
 namespace Microsoft.Azure.Commands.Compute
 {
-    [Cmdlet("Stop", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "AvailabilitySetMigration", SupportsShouldProcess = true)]
+    [Cmdlet("Stop", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "AvailabilitySetMigration", DefaultParameterSetName = ResourceGroupNameParameterSet, SupportsShouldProcess = true)]
     [OutputType(typeof(PSComputeLongRunningOperation), typeof(PSAzureOperationResponse))]
     public class StopAzureAvailabilitySetMigrationCommand : AvailabilitySetBaseCmdlet
     {
+        protected const string ResourceGroupNameParameterSet = "ResourceGroupNameParameterSet";
+        protected const string InputObjectParameterSet = "InputObjectParameterSet";
+
         [Parameter(
            Mandatory = true,
            Position = 0,
+           ParameterSetName = ResourceGroupNameParameterSet,
            ValueFromPipelineByPropertyName = true,
            HelpMessage = "The resource group name.")]
         [ResourceGroupCompleter]
@@ -37,11 +41,21 @@ namespace Microsoft.Azure.Commands.Compute
         [Parameter(
             Mandatory = true,
             Position = 1,
+            ParameterSetName = ResourceGroupNameParameterSet,
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "The availability set name.")]
         [ResourceNameCompleter("Microsoft.Compute/availabilitySets", "ResourceGroupName")]
         [ValidateNotNullOrEmpty]
         public string Name { get; set; }
+
+        [Parameter(
+            Mandatory = true,
+            Position = 0,
+            ParameterSetName = InputObjectParameterSet,
+            ValueFromPipeline = true,
+            HelpMessage = "The availability set object.")]
+        [ValidateNotNullOrEmpty]
+        public PSAvailabilitySet InputObject { get; set; }
 
         [Parameter(Mandatory = false, HelpMessage = "Run cmdlet in the background")]
         public SwitchParameter AsJob { get; set; }
@@ -49,6 +63,12 @@ namespace Microsoft.Azure.Commands.Compute
         public override void ExecuteCmdlet()
         {
             base.ExecuteCmdlet();
+
+            if (this.ParameterSetName.Equals(InputObjectParameterSet))
+            {
+                this.ResourceGroupName = this.InputObject.ResourceGroupName;
+                this.Name = this.InputObject.Name;
+            }
 
             if (this.ShouldProcess(Name, "Cancel Availability Set Migration"))
             {

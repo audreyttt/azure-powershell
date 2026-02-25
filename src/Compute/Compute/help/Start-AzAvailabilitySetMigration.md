@@ -12,8 +12,17 @@ Starts the migration operation on an Availability Set to a Flexible Virtual Mach
 
 ## SYNTAX
 
+### ResourceGroupNameParameterSet (Default)
 ```
 Start-AzAvailabilitySetMigration [-ResourceGroupName] <String> [-Name] <String>
+ [-VirtualMachineScaleSetFlexibleId] <String> [-AsJob]
+ [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
+```
+
+### InputObjectParameterSet
+```
+Start-AzAvailabilitySetMigration [-InputObject] <PSAvailabilitySet>
  [-VirtualMachineScaleSetFlexibleId] <String> [-AsJob]
  [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
@@ -32,6 +41,13 @@ Start-AzAvailabilitySetMigration -ResourceGroupName "MyResourceGroup" -Name "MyA
 ```
 
 This command starts the migration of the availability set named MyAvailabilitySet to the specified Flexible Virtual Machine Scale Set.
+
+### Example 2: Start migration using a piped PSAvailabilitySet object
+```powershell
+Get-AzAvailabilitySet -ResourceGroupName "MyResourceGroup" -Name "MyAvailabilitySet" | Start-AzAvailabilitySetMigration -VirtualMachineScaleSetFlexibleId "/subscriptions/{sub-id}/resourceGroups/MyResourceGroup/providers/Microsoft.Compute/virtualMachineScaleSets/MyFlexibleVMSS"
+```
+
+This command retrieves the availability set and pipes it to Start-AzAvailabilitySetMigration to begin migration.
 
 ## PARAMETERS
 
@@ -65,12 +81,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -InputObject
+The availability set object to start migration for.
+
+```yaml
+Type: Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
+Parameter Sets: InputObjectParameterSet
+Aliases:
+
+Required: True
+Position: 0
+Default value: None
+Accept pipeline input: True (ByValue)
+Accept wildcard characters: False
+```
+
 ### -Name
 The availability set name.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases: AvailabilitySetName
 
 Required: True
@@ -85,7 +116,7 @@ Specifies the name of the resource group.
 
 ```yaml
 Type: System.String
-Parameter Sets: (All)
+Parameter Sets: ResourceGroupNameParameterSet
 Aliases:
 
 Required: True
@@ -146,6 +177,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### System.String
+
+### Microsoft.Azure.Commands.Compute.Models.PSAvailabilitySet
 
 ## OUTPUTS
 

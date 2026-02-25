@@ -20,13 +20,17 @@ using Microsoft.Azure.Commands.ResourceManager.Common.ArgumentCompleters;
 
 namespace Microsoft.Azure.Commands.Compute
 {
-    [Cmdlet("Convert", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "AvailabilitySet", SupportsShouldProcess = true)]
+    [Cmdlet("Convert", ResourceManager.Common.AzureRMConstants.AzureRMPrefix + "AvailabilitySet", DefaultParameterSetName = ResourceGroupNameParameterSet, SupportsShouldProcess = true)]
     [OutputType(typeof(PSComputeLongRunningOperation), typeof(PSAzureOperationResponse))]
     public class ConvertAzureAvailabilitySetCommand : AvailabilitySetBaseCmdlet
     {
+        protected const string ResourceGroupNameParameterSet = "ResourceGroupNameParameterSet";
+        protected const string InputObjectParameterSet = "InputObjectParameterSet";
+
         [Parameter(
            Mandatory = true,
            Position = 0,
+           ParameterSetName = ResourceGroupNameParameterSet,
            ValueFromPipelineByPropertyName = true,
            HelpMessage = "The resource group name.")]
         [ResourceGroupCompleter]
@@ -37,6 +41,7 @@ namespace Microsoft.Azure.Commands.Compute
         [Parameter(
             Mandatory = true,
             Position = 1,
+            ParameterSetName = ResourceGroupNameParameterSet,
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "The availability set name.")]
         [ResourceNameCompleter("Microsoft.Compute/availabilitySets", "ResourceGroupName")]
@@ -45,7 +50,23 @@ namespace Microsoft.Azure.Commands.Compute
 
         [Parameter(
             Mandatory = true,
+            Position = 0,
+            ParameterSetName = InputObjectParameterSet,
+            ValueFromPipeline = true,
+            HelpMessage = "The availability set object.")]
+        [ValidateNotNullOrEmpty]
+        public PSAvailabilitySet InputObject { get; set; }
+
+        [Parameter(
+            Mandatory = true,
             Position = 2,
+            ParameterSetName = ResourceGroupNameParameterSet,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "The name of the Virtual Machine Scale Set to create.")]
+        [Parameter(
+            Mandatory = true,
+            Position = 1,
+            ParameterSetName = InputObjectParameterSet,
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "The name of the Virtual Machine Scale Set to create.")]
         [ValidateNotNullOrEmpty]
@@ -60,6 +81,12 @@ namespace Microsoft.Azure.Commands.Compute
         public override void ExecuteCmdlet()
         {
             base.ExecuteCmdlet();
+
+            if (this.ParameterSetName.Equals(InputObjectParameterSet))
+            {
+                this.ResourceGroupName = this.InputObject.ResourceGroupName;
+                this.Name = this.InputObject.Name;
+            }
 
             if (this.ShouldProcess(Name, "Convert Availability Set to Virtual Machine Scale Set"))
             {
