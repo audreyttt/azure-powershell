@@ -20,6 +20,9 @@
 
 -->
 ## Upcoming Release
+* Added `-SystemAssignedIdentity` and `-UserAssignedIdentities` parameters to `New-AzGallery` and `Update-AzGallery` to support managed identities on Azure Compute Galleries.
+* Updated `Get-AzGallery` output to include the `Identity` property of type `GalleryIdentity`.
+
 * Updated Compute SDK to be generated with autorest.powershell, replacing track 1 SDK
 
 ## Version 11.2.0

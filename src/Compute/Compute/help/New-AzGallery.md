@@ -15,8 +15,8 @@ Create a gallery.
 ```
 New-AzGallery [-ResourceGroupName] <String> [-Name] <String> [-AsJob] [-Location] <String>
  [-Description <String>] [-Tag <Hashtable>] [-Permission <String>] [-PublisherUri <String>]
- [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>]
- [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>] [-SystemAssignedIdentity]
+ [-UserAssignedIdentities <String[]>] [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -38,6 +38,21 @@ New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location 
 ```
 
 Create a gallery with Direct Sharing enabled.
+
+### Example 3
+```powershell
+New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location -SystemAssignedIdentity
+```
+
+Create a gallery with a system-assigned managed identity.
+
+### Example 4
+```powershell
+$uid = Get-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName
+New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location -UserAssignedIdentities $uid.Id
+```
+
+Create a gallery with a user-assigned managed identity.
 
 ## PARAMETERS
 
@@ -211,6 +226,36 @@ Resource tags
 
 ```yaml
 Type: System.Collections.Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -SystemAssignedIdentity
+Enables system-assigned managed identity on the gallery.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UserAssignedIdentities
+The list of ARM resource IDs of user-assigned managed identities to associate with the gallery. For example: '/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{identityName}'.
+
+```yaml
+Type: System.String[]
 Parameter Sets: (All)
 Aliases:
 

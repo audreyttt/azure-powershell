@@ -1225,3 +1225,48 @@ function Test-InVMAccessControlProfileVersion
         Clean-ResourceGroup $rgname;
     }
 }
+
+<#
+.SYNOPSIS
+Testing gallery commands with managed identity
+#>
+function Test-GalleryManagedIdentity
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName;
+    $galleryName = 'gallery' + $rgname;
+
+    try
+    {
+        # Common
+        [string]$loc = Get-ComputeVMLocation;
+        $loc = $loc.Replace(' ', '');
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+
+        # Create gallery with SystemAssignedIdentity
+        New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $loc -SystemAssignedIdentity;
+        $gallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-NotNull $gallery.Identity;
+        Assert-AreEqual "SystemAssigned" $gallery.Identity.Type;
+        Assert-NotNull $gallery.Identity.PrincipalId;
+        Assert-NotNull $gallery.Identity.TenantId;
+
+        # Update gallery - add UserAssignedIdentity alongside SystemAssigned
+        $userIdentityId = "/subscriptions/" + (Get-AzContext).Subscription.Id + "/resourceGroups/" + $rgname + "/providers/Microsoft.ManagedIdentity/userAssignedIdentities/testIdentity";
+        Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -SystemAssignedIdentity -UserAssignedIdentities $userIdentityId;
+        $gallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-NotNull $gallery.Identity;
+        Assert-AreEqual "SystemAssigned, UserAssigned" $gallery.Identity.Type;
+
+        # Update gallery via InputObject (pipeline)
+        $gallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Update-AzGallery -InputObject $gallery -SystemAssignedIdentity;
+        $updatedGallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-NotNull $updatedGallery.Identity;
+    }
+    finally
+    {
+        # Cleanup
+        Clean-ResourceGroup $rgname;
+    }
+}
