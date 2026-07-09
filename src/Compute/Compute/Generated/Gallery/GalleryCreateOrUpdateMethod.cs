@@ -92,6 +92,10 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                         gallery.Tags = this.Tag.Cast<DictionaryEntry>().ToDictionary(ht => (string)ht.Key, ht => (string)ht.Value);
                     }
 
+                    if (this.IsParameterBound(c => c.SystemAssignedIdentity) || this.IsParameterBound(c => c.UserAssignedIdentity))
+                    {
+                        gallery.Identity = BuildGalleryIdentity(this.SystemAssignedIdentity.IsPresent, this.UserAssignedIdentity);
+                    }
 
                     var result = GalleriesClient.CreateOrUpdate(resourceGroupName, galleryName, gallery);
                     var psObject = new PSGallery();
@@ -168,6 +172,54 @@ namespace Microsoft.Azure.Commands.Compute.Automation
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "Gets or sets the prefix of the gallery name that will be displayed publicly. Visible to all users.")]
         public string PublicNamePrefix { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            HelpMessage = "Enables a system assigned managed identity (MSI) for the gallery.")]
+        public SwitchParameter SystemAssignedIdentity { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "The resource IDs of user assigned managed identities to associate with the gallery. Use the resource ID of each identity (for example, the Id property returned by Get-AzUserAssignedIdentity).")]
+        public string[] UserAssignedIdentity { get; set; }
+
+        private static GalleryIdentity BuildGalleryIdentity(bool systemAssigned, string[] userAssignedIds)
+        {
+            bool hasUserAssigned = userAssignedIds != null && userAssignedIds.Length > 0;
+
+            if (!systemAssigned && !hasUserAssigned)
+            {
+                return null;
+            }
+
+            ResourceIdentityType identityType;
+            if (systemAssigned && hasUserAssigned)
+            {
+                identityType = ResourceIdentityType.SystemAssignedUserAssigned;
+            }
+            else if (systemAssigned)
+            {
+                identityType = ResourceIdentityType.SystemAssigned;
+            }
+            else
+            {
+                identityType = ResourceIdentityType.UserAssigned;
+            }
+
+            var identity = new GalleryIdentity { Type = identityType };
+
+            if (hasUserAssigned)
+            {
+                identity.UserAssignedIdentities = new Dictionary<string, UserAssignedIdentitiesValue>();
+                foreach (var id in userAssignedIds)
+                {
+                    identity.UserAssignedIdentities[id] = new UserAssignedIdentitiesValue();
+                }
+            }
+
+            return identity;
+        }
 
     }
 
@@ -363,7 +415,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                         throw new Exception("Parameters '-Subscription', '-Tenant', '-RemoveSubscription' or '-RemoveTenant'  must be used with '-Share' parameter.");
                     }
 
-                    Gallery result = new Gallery();
+                    Gallery result;
                     if (this.Share.IsPresent || this.Community.IsPresent || this.Reset.IsPresent)
                     {
                         GallerySharingProfileClient.Update(resourceGroupName, galleryName, sharingUpdate);
@@ -371,7 +423,12 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                     }
                     else
                     {
-                        GalleriesClient.CreateOrUpdate(resourceGroupName, galleryName, gallery);
+                        if (this.IsParameterBound(c => c.SystemAssignedIdentity) || this.IsParameterBound(c => c.UserAssignedIdentity))
+                        {
+                            gallery.Identity = BuildGalleryIdentity(this.SystemAssignedIdentity.IsPresent, this.UserAssignedIdentity);
+                        }
+
+                        result = GalleriesClient.CreateOrUpdate(resourceGroupName, galleryName, gallery);
                     }
                     var psObject = new PSGallery();
                     ComputeAutomationAutoMapperProfile.Mapper.Map<Gallery, PSGallery>(result, psObject);
@@ -496,5 +553,54 @@ namespace Microsoft.Azure.Commands.Compute.Automation
             ValueFromPipelineByPropertyName = true,
             HelpMessage = "Gets or sets the prefix of the gallery name that will be displayed publicly. Visible to all users.")]
         public string PublicNamePrefix { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            HelpMessage = "Enables a system assigned managed identity (MSI) for the gallery.")]
+        public SwitchParameter SystemAssignedIdentity { get; set; }
+
+        [Parameter(
+            Mandatory = false,
+            ValueFromPipelineByPropertyName = true,
+            HelpMessage = "The resource IDs of user assigned managed identities to associate with the gallery. Use the resource ID of each identity (for example, the Id property returned by Get-AzUserAssignedIdentity).")]
+        public string[] UserAssignedIdentity { get; set; }
+
+        private static GalleryIdentity BuildGalleryIdentity(bool systemAssigned, string[] userAssignedIds)
+        {
+            bool hasUserAssigned = userAssignedIds != null && userAssignedIds.Length > 0;
+
+            if (!systemAssigned && !hasUserAssigned)
+            {
+                return null;
+            }
+
+            ResourceIdentityType identityType;
+            if (systemAssigned && hasUserAssigned)
+            {
+                identityType = ResourceIdentityType.SystemAssignedUserAssigned;
+            }
+            else if (systemAssigned)
+            {
+                identityType = ResourceIdentityType.SystemAssigned;
+            }
+            else
+            {
+                identityType = ResourceIdentityType.UserAssigned;
+            }
+
+            var identity = new GalleryIdentity { Type = identityType };
+
+            if (hasUserAssigned)
+            {
+                identity.UserAssignedIdentities = new Dictionary<string, UserAssignedIdentitiesValue>();
+                foreach (var id in userAssignedIds)
+                {
+                    identity.UserAssignedIdentities[id] = new UserAssignedIdentitiesValue();
+                }
+            }
+
+            return identity;
+        }
     }
 }
+

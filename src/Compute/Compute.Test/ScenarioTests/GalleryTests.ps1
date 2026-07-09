@@ -1303,3 +1303,86 @@ function Test-GalleryImageDefinitionUpdateFeature
         Clean-ResourceGroup $rgname;
     }
 }
+
+<#
+.SYNOPSIS
+Tests Gallery managed identity - SystemAssigned only, UserAssigned only, both combined, Update merge semantics, and Get returning Identity.
+#>
+function Test-GalleryManagedIdentity
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName;
+    $galleryName = 'gallery' + $rgname;
+    $uaiName = 'uai' + $rgname;
+
+    try
+    {
+        # Common
+        [string]$loc = Get-ComputeVMLocation;
+        $loc = $loc.Replace(' ', '');
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+
+        # Step 1: Create gallery with SystemAssigned identity only
+        $gallery = New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $loc -SystemAssignedIdentity;
+        Assert-NotNull $gallery.Identity;
+        Assert-AreEqual "SystemAssigned" $gallery.Identity.Type.ToString();
+
+        # Step 2: Verify Get-AzGallery returns Identity on the result
+        $getGallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-NotNull $getGallery.Identity;
+        Assert-AreEqual "SystemAssigned" $getGallery.Identity.Type.ToString();
+        Assert-NotNull $getGallery.Identity.PrincipalId;
+        Assert-NotNull $getGallery.Identity.TenantId;
+
+        # Step 3: Create a user assigned identity for subsequent tests
+        $uai = New-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $uaiName -Location $loc;
+        Assert-NotNull $uai;
+        Assert-NotNull $uai.Id;
+        $uaiId = $uai.Id;
+
+        # Step 4: Update gallery to add a UserAssigned identity (merge semantics - SystemAssigned was set, now also add UserAssigned)
+        # Capture PrincipalId/TenantId before the update to verify they are preserved
+        $principalIdBefore = $getGallery.Identity.PrincipalId;
+        $tenantIdBefore = $getGallery.Identity.TenantId;
+        $updated = Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -SystemAssignedIdentity -UserAssignedIdentity $uaiId;
+        Assert-NotNull $updated.Identity;
+        Assert-AreEqual "SystemAssigned, UserAssigned" $updated.Identity.Type.ToString();
+        Assert-NotNull $updated.Identity.UserAssignedIdentities;
+        Assert-True { $updated.Identity.UserAssignedIdentities.ContainsKey($uaiId) };
+
+        # Step 5: Round-trip via Get - verify identity is persisted and PrincipalId/TenantId are preserved
+        $getGallery2 = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-NotNull $getGallery2.Identity;
+        Assert-AreEqual "SystemAssigned, UserAssigned" $getGallery2.Identity.Type.ToString();
+        Assert-NotNull $getGallery2.Identity.UserAssignedIdentities;
+        Assert-True { $getGallery2.Identity.UserAssignedIdentities.ContainsKey($uaiId) };
+        Assert-AreEqual $principalIdBefore $getGallery2.Identity.PrincipalId;
+        Assert-AreEqual $tenantIdBefore $getGallery2.Identity.TenantId;
+
+        # Step 6: Create a second gallery with UserAssigned identity only
+        $galleryName2 = 'gallery2' + $rgname;
+        $gallery2 = New-AzGallery -ResourceGroupName $rgname -Name $galleryName2 -Location $loc -UserAssignedIdentity $uaiId;
+        Assert-NotNull $gallery2.Identity;
+        Assert-AreEqual "UserAssigned" $gallery2.Identity.Type.ToString();
+        Assert-NotNull $gallery2.Identity.UserAssignedIdentities;
+        Assert-True { $gallery2.Identity.UserAssignedIdentities.ContainsKey($uaiId) };
+
+        # Step 7: Update via InputObject (piping from Get-AzGallery)
+        $galleryInput = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName2;
+        $updated2 = Update-AzGallery -InputObject $galleryInput -SystemAssignedIdentity -UserAssignedIdentity $uaiId;
+        Assert-NotNull $updated2.Identity;
+        Assert-AreEqual "SystemAssigned, UserAssigned" $updated2.Identity.Type.ToString();
+
+        # Step 8: Update without identity parameters - description update should preserve existing identity (merge semantics)
+        $description = "Updated description";
+        $updated3 = Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -Description $description;
+        $getGallery3 = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
+        Assert-AreEqual $description $getGallery3.Description;
+        Assert-NotNull $getGallery3.Identity;
+    }
+    finally
+    {
+        # Cleanup
+        Remove-AzResourceGroup -Name $rgname -Force -ErrorAction SilentlyContinue;
+    }
+}
