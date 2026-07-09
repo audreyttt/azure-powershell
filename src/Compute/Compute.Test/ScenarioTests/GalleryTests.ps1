@@ -1303,3 +1303,82 @@ function Test-GalleryImageDefinitionUpdateFeature
         Clean-ResourceGroup $rgname;
     }
 }
+
+<#
+.SYNOPSIS
+Tests managed identity support for New-AzGallery and Update-AzGallery
+#>
+function Test-GalleryManagedIdentity
+{
+    # Setup
+    $rgname = Get-ComputeTestResourceName;
+    $loc = Get-ComputeVMLocation;
+
+    try
+    {
+        New-AzResourceGroup -Name $rgname -Location $loc -Force;
+        $location = $loc;
+
+        # Gallery names for each scenario
+        $gallerySystemAssigned = 'glsys' + $rgname;
+        $galleryUserAssigned   = 'glusr' + $rgname;
+        $galleryBoth           = 'glboth' + $rgname;
+
+        # User-assigned identity setup
+        $identityName = 'uid' + $rgname;
+        New-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName -Location $location;
+        $uid = Get-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName;
+        Assert-NotNull $uid;
+
+        # Step 1: New-AzGallery with SystemAssignedIdentity only
+        $gallery = New-AzGallery -ResourceGroupName $rgname -Name $gallerySystemAssigned -Location $location -SystemAssignedIdentity;
+        Assert-NotNull $gallery;
+        Assert-NotNull $gallery.Identity;
+        Assert-AreEqual 'SystemAssigned' $gallery.Identity.Type.ToString();
+
+        # Verify via Get-AzGallery
+        $fetchedGallery = Get-AzGallery -ResourceGroupName $rgname -Name $gallerySystemAssigned;
+        Assert-NotNull $fetchedGallery.Identity;
+        Assert-AreEqual 'SystemAssigned' $fetchedGallery.Identity.Type.ToString();
+
+        # Step 2: New-AzGallery with UserAssignedIdentity only
+        $gallery2 = New-AzGallery -ResourceGroupName $rgname -Name $galleryUserAssigned -Location $location -UserAssignedIdentity $uid.Id;
+        Assert-NotNull $gallery2;
+        Assert-NotNull $gallery2.Identity;
+        Assert-AreEqual 'UserAssigned' $gallery2.Identity.Type.ToString();
+        Assert-NotNull $gallery2.Identity.UserAssignedIdentities;
+        Assert-True { $gallery2.Identity.UserAssignedIdentities.ContainsKey($uid.Id) };
+
+        # Verify via Get-AzGallery
+        $fetchedGallery2 = Get-AzGallery -ResourceGroupName $rgname -Name $galleryUserAssigned;
+        Assert-NotNull $fetchedGallery2.Identity;
+        Assert-AreEqual 'UserAssigned' $fetchedGallery2.Identity.Type.ToString();
+        Assert-True { $fetchedGallery2.Identity.UserAssignedIdentities.ContainsKey($uid.Id) };
+
+        # Step 3: New-AzGallery with both SystemAssigned and UserAssigned identities
+        $gallery3 = New-AzGallery -ResourceGroupName $rgname -Name $galleryBoth -Location $location -SystemAssignedIdentity -UserAssignedIdentity $uid.Id;
+        Assert-NotNull $gallery3;
+        Assert-NotNull $gallery3.Identity;
+        Assert-AreEqual 'SystemAssigned, UserAssigned' $gallery3.Identity.Type.ToString();
+        Assert-True { $gallery3.Identity.UserAssignedIdentities.ContainsKey($uid.Id) };
+
+        # Step 4: Update-AzGallery to add SystemAssignedIdentity
+        $updatedGallery = Update-AzGallery -ResourceGroupName $rgname -Name $galleryUserAssigned -SystemAssignedIdentity;
+        Assert-NotNull $updatedGallery;
+        Assert-NotNull $updatedGallery.Identity;
+        Assert-AreEqual 'SystemAssigned, UserAssigned' $updatedGallery.Identity.Type.ToString();
+
+        # Step 5: Update-AzGallery via pipeline (ObjectParameter) with SystemAssignedIdentity
+        $fetchedForUpdate = Get-AzGallery -ResourceGroupName $rgname -Name $gallerySystemAssigned;
+        $pipelineResult = $fetchedForUpdate | Update-AzGallery -UserAssignedIdentity $uid.Id;
+        Assert-NotNull $pipelineResult;
+        Assert-NotNull $pipelineResult.Identity;
+        Assert-AreEqual 'SystemAssigned, UserAssigned' $pipelineResult.Identity.Type.ToString();
+        Assert-True { $pipelineResult.Identity.UserAssignedIdentities.ContainsKey($uid.Id) };
+    }
+    finally
+    {
+        # Cleanup
+        Remove-AzResourceGroup -Name $rgname -Force -ErrorAction SilentlyContinue;
+    }
+}
