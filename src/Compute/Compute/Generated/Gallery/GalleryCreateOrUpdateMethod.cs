@@ -175,7 +175,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
 
         [Parameter(
             Mandatory = false,
-            HelpMessage = "Enables a system assigned identity for the gallery.")]
+            HelpMessage = "Enables a system assigned managed identity (MSI) for the gallery.")]
         public SwitchParameter SystemAssignedIdentity { get; set; }
 
         [Parameter(
@@ -551,7 +551,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
 
         [Parameter(
             Mandatory = false,
-            HelpMessage = "Enables a system assigned identity for the gallery.")]
+            HelpMessage = "Enables a system assigned managed identity (MSI) for the gallery.")]
         public SwitchParameter SystemAssignedIdentity { get; set; }
 
         [Parameter(

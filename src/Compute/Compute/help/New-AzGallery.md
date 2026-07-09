@@ -230,7 +230,7 @@ Accept wildcard characters: False
 ```
 
 ### -SystemAssignedIdentity
-Enables a system assigned identity (MSI) for the gallery.
+Enables a system assigned managed identity (MSI) for the gallery.
 
 ```yaml
 Type: System.Management.Automation.SwitchParameter
