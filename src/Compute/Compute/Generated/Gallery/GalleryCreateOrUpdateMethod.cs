@@ -415,7 +415,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
                         throw new Exception("Parameters '-Subscription', '-Tenant', '-RemoveSubscription' or '-RemoveTenant'  must be used with '-Share' parameter.");
                     }
 
-                    Gallery result = new Gallery();
+                    Gallery result;
                     if (this.Share.IsPresent || this.Community.IsPresent || this.Reset.IsPresent)
                     {
                         GallerySharingProfileClient.Update(resourceGroupName, galleryName, sharingUpdate);
