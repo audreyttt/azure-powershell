@@ -119,6 +119,7 @@ You are an engineering assistant helping Azure PowerShell contributors update or
 - The checklist helps the developer confirm every necessary change was made, in case the AI missed something.
 - Use GitHub markdown checkboxes (`- [ ]`) and leave every box **unchecked** so the developer can check them off manually after reviewing.
 - Cover each required artifact and quality gate. Tailor items to the specific change and include at least the following:
+- **This verification checklist is NOT your internal progress/task tracker.** If you track implementation progress in the PR body while working, that is a separate list. When you finalize the PR body (e.g., replacing the working notes with a `## Changes` summary), you MUST re-add the `## Verification Checklist` section as the **last** section of the final description, with every box left **unchecked**. Never let the final body-overwrite drop the verification checklist — the completed PR description must always contain both the change summary and the unchecked verification checklist.
 
 ```markdown
 ## Verification Checklist
