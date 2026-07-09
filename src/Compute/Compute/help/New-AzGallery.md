@@ -252,7 +252,7 @@ Accept wildcard characters: False
 ```
 
 ### -UserAssignedIdentity
-Specifies the resource IDs of user-assigned managed identities for the gallery. Use the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.
+Specifies the resource IDs of user-assigned managed identities for the gallery as strings. Obtain these IDs from the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.
 
 ```yaml
 Type: System.String[]

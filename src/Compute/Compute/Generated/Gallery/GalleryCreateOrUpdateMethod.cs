@@ -204,7 +204,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
         [Parameter(
             Mandatory = false,
             ValueFromPipelineByPropertyName = true,
-            HelpMessage = "Specifies the resource IDs of user-assigned managed identities for the gallery. Use the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.")]
+            HelpMessage = "Specifies the resource IDs of user-assigned managed identities for the gallery as strings. Obtain these IDs from the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.")]
         public string[] UserAssignedIdentity { get; set; }
 
     }
@@ -573,7 +573,7 @@ namespace Microsoft.Azure.Commands.Compute.Automation
         [Parameter(
             Mandatory = false,
             ValueFromPipelineByPropertyName = true,
-            HelpMessage = "Specifies the resource IDs of user-assigned managed identities for the gallery. Use the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.")]
+            HelpMessage = "Specifies the resource IDs of user-assigned managed identities for the gallery as strings. Obtain these IDs from the 'Id' property of objects returned by 'Get-AzUserAssignedIdentity'.")]
         public string[] UserAssignedIdentity { get; set; }
     }
 }
