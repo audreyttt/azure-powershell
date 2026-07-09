@@ -1341,18 +1341,23 @@ function Test-GalleryManagedIdentity
         $uaiId = $uai.Id;
 
         # Step 4: Update gallery to add a UserAssigned identity (merge semantics - SystemAssigned was set, now also add UserAssigned)
+        # Capture PrincipalId/TenantId before the update to verify they are preserved
+        $principalIdBefore = $getGallery.Identity.PrincipalId;
+        $tenantIdBefore = $getGallery.Identity.TenantId;
         $updated = Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -SystemAssignedIdentity -UserAssignedIdentity $uaiId;
         Assert-NotNull $updated.Identity;
         Assert-AreEqual "SystemAssigned, UserAssigned" $updated.Identity.Type.ToString();
         Assert-NotNull $updated.Identity.UserAssignedIdentities;
         Assert-True { $updated.Identity.UserAssignedIdentities.ContainsKey($uaiId) };
 
-        # Step 5: Round-trip via Get - verify identity is persisted
+        # Step 5: Round-trip via Get - verify identity is persisted and PrincipalId/TenantId are preserved
         $getGallery2 = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName;
         Assert-NotNull $getGallery2.Identity;
         Assert-AreEqual "SystemAssigned, UserAssigned" $getGallery2.Identity.Type.ToString();
         Assert-NotNull $getGallery2.Identity.UserAssignedIdentities;
         Assert-True { $getGallery2.Identity.UserAssignedIdentities.ContainsKey($uaiId) };
+        Assert-AreEqual $principalIdBefore $getGallery2.Identity.PrincipalId;
+        Assert-AreEqual $tenantIdBefore $getGallery2.Identity.TenantId;
 
         # Step 6: Create a second gallery with UserAssigned identity only
         $galleryName2 = 'gallery2' + $rgname;

@@ -188,6 +188,11 @@ namespace Microsoft.Azure.Commands.Compute.Automation
         {
             bool hasUserAssigned = userAssignedIds != null && userAssignedIds.Length > 0;
 
+            if (!systemAssigned && !hasUserAssigned)
+            {
+                return null;
+            }
+
             ResourceIdentityType identityType;
             if (systemAssigned && hasUserAssigned)
             {
@@ -563,6 +568,11 @@ namespace Microsoft.Azure.Commands.Compute.Automation
         private static GalleryIdentity BuildGalleryIdentity(bool systemAssigned, string[] userAssignedIds)
         {
             bool hasUserAssigned = userAssignedIds != null && userAssignedIds.Length > 0;
+
+            if (!systemAssigned && !hasUserAssigned)
+            {
+                return null;
+            }
 
             ResourceIdentityType identityType;
             if (systemAssigned && hasUserAssigned)
