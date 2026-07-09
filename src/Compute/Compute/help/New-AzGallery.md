@@ -260,7 +260,7 @@ Accept wildcard characters: False
 ```
 
 ### -UserAssignedIdentity
-One or more ARM resource IDs of user assigned managed identities to associate with the gallery. Use the Id property of objects returned by Get-AzUserAssignedIdentity.
+One or more Azure Resource Manager (ARM) resource IDs of user assigned managed identities to associate with the gallery. Use the Id property of objects returned by Get-AzUserAssignedIdentity.
 
 ```yaml
 Type: System.String[]
