@@ -22,7 +22,7 @@
 ## Upcoming Release
 * Added `-SystemAssignedIdentity` and `-UserAssignedIdentity` parameters to `New-AzGallery` and `Update-AzGallery` cmdlets to support Managed Identity configuration on Azure Compute Galleries.
 * Updated `Get-AzGallery` output to include the `Identity` property of type `GalleryIdentity`, exposing the managed identity configuration of a gallery.
-* Added support for assigning multiple user assigned managed identities to a gallery using the `-UserAssignedIdentity` parameter, which accepts one or more ARM resource IDs (e.g. the `Id` property returned by `Get-AzUserAssignedIdentity`).
+* Added support for assigning multiple user assigned managed identities to a gallery using the `-UserAssignedIdentity` parameter, which accepts one or more ARM (Azure Resource Manager) resource IDs (e.g. the `Id` property returned by `Get-AzUserAssignedIdentity`).
 * Added `-Feature` parameter to `Update-AzGalleryImageDefinition` cmdlet to allow updating existing gallery image features (such as DiskControllerTypes, SecurityType, IsAcceleratedNetwork, and IsHibernate). Each feature supports a `StartsAtVersion` property to specify the minimum gallery image version that supports the updated feature.
 * Added `-AllowUpdateImage` parameter to `Update-AzGalleryImageDefinition` cmdlet. Must be set to true when using the `-Feature` parameter to update gallery image features.
 * Compute ComputeRP related cmdlets will now use 2025-11-01 version of the ComputeRP API.
