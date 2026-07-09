@@ -15,8 +15,8 @@ Create a gallery.
 ```
 New-AzGallery [-ResourceGroupName] <String> [-Name] <String> [-AsJob] [-Location] <String>
  [-Description <String>] [-Tag <Hashtable>] [-Permission <String>] [-PublisherUri <String>]
- [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>]
- [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>] [-SystemAssignedIdentity]
+ [-UserAssignedIdentity <String[]>] [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -38,6 +38,29 @@ New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location 
 ```
 
 Create a gallery with Direct Sharing enabled.
+
+### Example 3
+```powershell
+New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location -SystemAssignedIdentity
+```
+
+Create a gallery with a system assigned managed identity.
+
+### Example 4
+```powershell
+$uid = Get-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName
+New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location -UserAssignedIdentity $uid.Id
+```
+
+Create a gallery with a user assigned managed identity.
+
+### Example 5
+```powershell
+$uid = Get-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName
+New-AzGallery -ResourceGroupName $rgname -Name $galleryName -Location $location -SystemAssignedIdentity -UserAssignedIdentity $uid.Id
+```
+
+Create a gallery with both system assigned and user assigned managed identities.
 
 ## PARAMETERS
 
@@ -206,11 +229,41 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -SystemAssignedIdentity
+Enables a system assigned identity (MSI) for the gallery.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Tag
 Resource tags
 
 ```yaml
 Type: System.Collections.Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -UserAssignedIdentity
+One or more ARM resource IDs of user assigned managed identities to associate with the gallery. Use the 'Id' property of objects returned by Get-AzUserAssignedIdentity.
+
+```yaml
+Type: System.String[]
 Parameter Sets: (All)
 Aliases:
 

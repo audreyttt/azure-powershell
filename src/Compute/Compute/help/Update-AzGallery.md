@@ -18,8 +18,8 @@ Update-AzGallery [-ResourceGroupName] <String> [-Name] <String> [-AsJob] [-Descr
  [-Tag <Hashtable>] [-Permission <String>] [-Subscription <String[]>] [-Tenant <String[]>]
  [-RemoveSubscription <String[]>] [-RemoveTenant <String[]>] [-Share] [-Community] [-Reset]
  [-PublisherUri <String>] [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>]
- [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
- [<CommonParameters>]
+ [-SystemAssignedIdentity] [-UserAssignedIdentity <String[]>] [-DefaultProfile <IAzureContextContainer>]
+ [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ResourceIdParameter
@@ -27,8 +27,8 @@ Update-AzGallery [-ResourceGroupName] <String> [-Name] <String> [-AsJob] [-Descr
 Update-AzGallery [-ResourceId] <String> [-AsJob] [-Description <String>] [-Tag <Hashtable>]
  [-Permission <String>] [-Subscription <String[]>] [-Tenant <String[]>] [-RemoveSubscription <String[]>]
  [-RemoveTenant <String[]>] [-Share] [-Community] [-Reset] [-PublisherUri <String>]
- [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>]
- [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>] [-SystemAssignedIdentity]
+ [-UserAssignedIdentity <String[]>] [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -37,8 +37,8 @@ Update-AzGallery [-ResourceId] <String> [-AsJob] [-Description <String>] [-Tag <
 Update-AzGallery [-InputObject] <PSGallery> [-AsJob] [-Description <String>] [-Tag <Hashtable>]
  [-Permission <String>] [-Subscription <String[]>] [-Tenant <String[]>] [-RemoveSubscription <String[]>]
  [-RemoveTenant <String[]>] [-Share] [-Community] [-Reset] [-PublisherUri <String>]
- [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>]
- [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
+ [-PublisherContact <String>] [-Eula <String>] [-PublicNamePrefix <String>] [-SystemAssignedIdentity]
+ [-UserAssignedIdentity <String[]>] [-DefaultProfile <IAzureContextContainer>] [-WhatIf] [-Confirm]
  [<CommonParameters>]
 ```
 
@@ -60,6 +60,29 @@ Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -Permission Group
 ```
 
 Update a gallery to be shared and add two subscriptions it is to be shared with.
+
+### Example 3
+```powershell
+Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -SystemAssignedIdentity
+```
+
+Update a gallery to add a system assigned managed identity.
+
+### Example 4
+```powershell
+$uid = Get-AzUserAssignedIdentity -ResourceGroupName $rgname -Name $identityName
+Update-AzGallery -ResourceGroupName $rgname -Name $galleryName -UserAssignedIdentity $uid.Id
+```
+
+Update a gallery to add a user assigned managed identity.
+
+### Example 5
+```powershell
+$gallery = Get-AzGallery -ResourceGroupName $rgname -Name $galleryName
+Update-AzGallery -InputObject $gallery -SystemAssignedIdentity
+```
+
+Update a gallery using an input object to add a system assigned managed identity.
 
 ## PARAMETERS
 
@@ -333,6 +356,21 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -SystemAssignedIdentity
+Enables a system assigned identity (MSI) for the gallery.
+
+```yaml
+Type: System.Management.Automation.SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Tag
 Resource tags
 
@@ -350,6 +388,21 @@ Accept wildcard characters: False
 
 ### -Tenant
 A list of tenant IDs the gallery is aimed to be shared to.
+
+```yaml
+Type: System.String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -UserAssignedIdentity
+One or more ARM resource IDs of user assigned managed identities to associate with the gallery. Use the 'Id' property of objects returned by Get-AzUserAssignedIdentity.
 
 ```yaml
 Type: System.String[]
